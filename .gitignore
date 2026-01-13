@@ -39,5 +39,10 @@ Thumbs.db
 *.log
 logs/
 
+# Outputs and exports (generated at runtime)
+outputs/
+exports/
+checkpoints/
+
 # Kaggle
 kaggle.json

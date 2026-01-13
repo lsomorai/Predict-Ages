@@ -1,0 +1,76 @@
+# Docker Compose for Age Prediction Application
+# Usage: docker-compose up
+
+version: '3.8'
+
+services:
+  # Main application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    volumes:
+      # Mount checkpoints directory for trained models
+      - ./checkpoints:/app/checkpoints
+      # Mount outputs directory for generated files
+      - ./outputs:/app/outputs
+      # Mount data directory for training (optional)
+      - ./data:/app/data:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Training service (for running training jobs)
+  train:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./outputs:/app/outputs
+      - ./data:/app/data:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WANDB_API_KEY=${WANDB_API_KEY:-}
+    command: ["python", "scripts/train.py", "--model", "all", "--data-dir", "/app/data"]
+    profiles:
+      - training
+
+  # Evaluation service
+  evaluate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./outputs:/app/outputs
+      - ./data:/app/data:ro
+    command: ["python", "scripts/evaluate.py", "--model", "all", "--compare", "--data-dir", "/app/data"]
+    profiles:
+      - evaluate
+
+  # ONNX export service
+  export:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./exports:/app/exports
+    command: ["python", "scripts/export_onnx.py", "--model", "all", "--quantize", "--benchmark"]
+    profiles:
+      - export
+
+# Volumes for persistent data
+volumes:
+  checkpoints:
+  outputs:
+  exports:

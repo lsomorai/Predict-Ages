@@ -24,10 +24,7 @@ class AgeDataset(Dataset):
     """
 
     def __init__(
-        self,
-        data_dir: str,
-        transform: Optional[transforms.Compose] = None,
-        verbose: bool = True
+        self, data_dir: str, transform: Optional[transforms.Compose] = None, verbose: bool = True
     ):
         """
         Initialize the dataset.
@@ -51,9 +48,7 @@ class AgeDataset(Dataset):
         all_images = []
 
         for ext in image_extensions:
-            all_images.extend(
-                glob.glob(os.path.join(self.data_dir, "**", ext), recursive=True)
-            )
+            all_images.extend(glob.glob(os.path.join(self.data_dir, "**", ext), recursive=True))
 
         if verbose:
             print(f"Found {len(all_images)} total images")
@@ -145,38 +140,32 @@ def get_transforms(config: Config, mode: str = "train") -> transforms.Compose:
 
         if config.color_jitter:
             transform_list.append(
-                transforms.ColorJitter(
-                    brightness=0.2,
-                    contrast=0.2,
-                    saturation=0.2,
-                    hue=0.1
-                )
+                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)
             )
 
-        transform_list.extend([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=config.mean, std=config.std),
-        ])
+        transform_list.extend(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize(mean=config.mean, std=config.std),
+            ]
+        )
 
         if config.random_erasing_prob > 0:
-            transform_list.append(
-                transforms.RandomErasing(p=config.random_erasing_prob)
-            )
+            transform_list.append(transforms.RandomErasing(p=config.random_erasing_prob))
 
         return transforms.Compose(transform_list)
     else:
         # Validation and test transforms (no augmentation)
-        return transforms.Compose([
-            transforms.Resize((config.image_size, config.image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=config.mean, std=config.std),
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((config.image_size, config.image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=config.mean, std=config.std),
+            ]
+        )
 
 
-def create_dataloaders(
-    config: Config,
-    data_dir: Optional[str] = None
-) -> dict[str, DataLoader]:
+def create_dataloaders(config: Config, data_dir: Optional[str] = None) -> dict[str, DataLoader]:
     """
     Create train, validation, and test dataloaders.
 
@@ -190,10 +179,7 @@ def create_dataloaders(
     data_dir = data_dir or config.data_dir
 
     # Load full dataset with training transforms
-    full_dataset = AgeDataset(
-        data_dir,
-        transform=get_transforms(config, "train")
-    )
+    full_dataset = AgeDataset(data_dir, transform=get_transforms(config, "train"))
 
     # Calculate split sizes
     total_size = len(full_dataset)
@@ -205,7 +191,7 @@ def create_dataloaders(
     train_dataset, val_dataset, test_dataset = random_split(
         full_dataset,
         [train_size, val_size, test_size],
-        generator=torch.Generator().manual_seed(42)  # Reproducible splits
+        generator=torch.Generator().manual_seed(42),  # Reproducible splits
     )
 
     print(f"\nDataset splits: Train={train_size}, Val={val_size}, Test={test_size}")
@@ -217,21 +203,21 @@ def create_dataloaders(
             batch_size=config.batch_size,
             shuffle=True,
             num_workers=config.num_workers,
-            pin_memory=True
+            pin_memory=True,
         ),
         "val": DataLoader(
             val_dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
-            pin_memory=True
+            pin_memory=True,
         ),
         "test": DataLoader(
             test_dataset,
             batch_size=config.batch_size,
             shuffle=False,
             num_workers=config.num_workers,
-            pin_memory=True
+            pin_memory=True,
         ),
     }
 

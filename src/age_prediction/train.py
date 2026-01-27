@@ -26,12 +26,7 @@ class TrainingHistory:
         self.learning_rates: list[float] = []
 
     def append(
-        self,
-        train_loss: float,
-        train_acc: float,
-        val_loss: float,
-        val_acc: float,
-        lr: float
+        self, train_loss: float, train_acc: float, val_loss: float, val_acc: float, lr: float
     ):
         self.train_loss.append(train_loss)
         self.train_acc.append(train_acc)
@@ -63,18 +58,10 @@ def get_optimizer(model: nn.Module, config: Config) -> optim.Optimizer:
     # Only optimize parameters that require gradients
     params = filter(lambda p: p.requires_grad, model.parameters())
 
-    return optim.Adam(
-        params,
-        lr=config.learning_rate,
-        weight_decay=config.weight_decay
-    )
+    return optim.Adam(params, lr=config.learning_rate, weight_decay=config.weight_decay)
 
 
-def get_scheduler(
-    optimizer: optim.Optimizer,
-    config: Config,
-    num_batches: int
-) -> Optional[object]:
+def get_scheduler(optimizer: optim.Optimizer, config: Config, num_batches: int) -> Optional[object]:
     """
     Create learning rate scheduler.
 
@@ -91,20 +78,12 @@ def get_scheduler(
 
     if config.scheduler_type == "cosine":
         return CosineAnnealingLR(
-            optimizer,
-            T_max=config.epochs,
-            eta_min=config.learning_rate * 0.01
+            optimizer, T_max=config.epochs, eta_min=config.learning_rate * 0.01
         )
     elif config.scheduler_type == "step":
         return StepLR(optimizer, step_size=5, gamma=0.5)
     elif config.scheduler_type == "plateau":
-        return ReduceLROnPlateau(
-            optimizer,
-            mode="max",
-            factor=0.5,
-            patience=2,
-            verbose=True
-        )
+        return ReduceLROnPlateau(optimizer, mode="max", factor=0.5, patience=2, verbose=True)
     else:
         return None
 
@@ -114,7 +93,7 @@ def train_epoch(
     dataloader: DataLoader,
     criterion: nn.Module,
     optimizer: optim.Optimizer,
-    device: torch.device
+    device: torch.device,
 ) -> tuple[float, float]:
     """
     Train for one epoch.
@@ -151,10 +130,7 @@ def train_epoch(
 
 
 def validate_epoch(
-    model: nn.Module,
-    dataloader: DataLoader,
-    criterion: nn.Module,
-    device: torch.device
+    model: nn.Module, dataloader: DataLoader, criterion: nn.Module, device: torch.device
 ) -> tuple[float, float]:
     """
     Validate for one epoch.
@@ -192,7 +168,7 @@ def train_model(
     config: Config,
     model_name: str,
     use_wandb: bool = False,
-    checkpoint_dir: Optional[str] = None
+    checkpoint_dir: Optional[str] = None,
 ) -> tuple[nn.Module, TrainingHistory]:
     """
     Train a model with full training loop.
@@ -221,11 +197,12 @@ def train_model(
     if use_wandb:
         try:
             import wandb
+
             wandb_run = wandb.init(
                 project=config.wandb_project,
                 entity=config.wandb_entity,
                 name=f"{model_name}-run",
-                config=asdict(config)
+                config=asdict(config),
             )
         except ImportError:
             print("Warning: wandb not installed. Skipping W&B logging.")
@@ -241,7 +218,7 @@ def train_model(
     best_model_path = os.path.join(checkpoint_dir, f"best_{model_name}.pth")
 
     print(f"\nTraining {model_name} on {device}")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     for epoch in range(config.epochs):
         print(f"\nEpoch {epoch + 1}/{config.epochs}")
@@ -254,9 +231,7 @@ def train_model(
         print(f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f}")
 
         # Validation phase
-        val_loss, val_acc = validate_epoch(
-            model, dataloaders["val"], criterion, device
-        )
+        val_loss, val_acc = validate_epoch(model, dataloaders["val"], criterion, device)
         print(f"Val Loss:   {val_loss:.4f} | Val Acc:   {val_acc:.4f}")
 
         # Get current learning rate
@@ -268,14 +243,17 @@ def train_model(
         # Log to W&B
         if use_wandb and wandb_run:
             import wandb
-            wandb.log({
-                "epoch": epoch + 1,
-                "train_loss": train_loss,
-                "train_acc": train_acc,
-                "val_loss": val_loss,
-                "val_acc": val_acc,
-                "learning_rate": current_lr,
-            })
+
+            wandb.log(
+                {
+                    "epoch": epoch + 1,
+                    "train_loss": train_loss,
+                    "train_acc": train_acc,
+                    "val_loss": val_loss,
+                    "val_acc": val_acc,
+                    "learning_rate": current_lr,
+                }
+            )
 
         # Update scheduler
         if scheduler is not None:
@@ -290,7 +268,7 @@ def train_model(
             torch.save(model.state_dict(), best_model_path)
             print(f"  -> New best model saved! (Val Acc: {val_acc:.4f})")
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"Training complete! Best Val Acc: {best_acc:.4f}")
     print(f"Best model saved to: {best_model_path}")
 
@@ -300,6 +278,7 @@ def train_model(
     # Finish W&B run
     if use_wandb and wandb_run:
         import wandb
+
         wandb.finish()
 
     return model, history

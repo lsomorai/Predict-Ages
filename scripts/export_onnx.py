@@ -24,58 +24,49 @@ from src.age_prediction.models import get_available_models
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Export models to ONNX format",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     parser.add_argument(
-        "--model", "-m",
+        "--model",
+        "-m",
         type=str,
         default="resnet50",
         choices=get_available_models() + ["all"],
-        help="Model to export"
+        help="Model to export",
     )
 
     parser.add_argument(
         "--checkpoint-dir",
         type=str,
         default="./checkpoints",
-        help="Directory with model checkpoints"
+        help="Directory with model checkpoints",
     )
 
     parser.add_argument(
-        "--output-dir",
-        type=str,
-        default="./exports",
-        help="Directory to save ONNX models"
+        "--output-dir", type=str, default="./exports", help="Directory to save ONNX models"
     )
 
     parser.add_argument(
-        "--quantize",
-        action="store_true",
-        help="Apply INT8 quantization to ONNX model"
+        "--quantize", action="store_true", help="Apply INT8 quantization to ONNX model"
     )
 
     parser.add_argument(
-        "--benchmark",
-        action="store_true",
-        help="Benchmark inference speed after export"
+        "--benchmark", action="store_true", help="Benchmark inference speed after export"
     )
 
     parser.add_argument(
         "--opset-version",
         type=int,
         default=18,
-        help="ONNX opset version (minimum 18 for PyTorch 2.x)"
+        help="ONNX opset version (minimum 18 for PyTorch 2.x)",
     )
 
     return parser.parse_args()
 
 
 def export_to_onnx(
-    model: torch.nn.Module,
-    model_name: str,
-    output_path: str,
-    opset_version: int = 18
+    model: torch.nn.Module, model_name: str, output_path: str, opset_version: int = 18
 ) -> str:
     """Export a PyTorch model to ONNX format."""
     model.eval()
@@ -93,11 +84,8 @@ def export_to_onnx(
         do_constant_folding=True,
         input_names=["input"],
         output_names=["output"],
-        dynamic_axes={
-            "input": {0: "batch_size"},
-            "output": {0: "batch_size"}
-        },
-        dynamo=False  # Use legacy exporter for quantization compatibility
+        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
+        dynamo=False,  # Use legacy exporter for quantization compatibility
     )
 
     print(f"Exported {model_name} to: {output_path}")
@@ -127,11 +115,7 @@ def quantize_onnx(input_path: str, output_path: str) -> str:
         print(f"  Warning: Preprocessing failed ({e}), trying direct quantization")
         model_to_quantize = input_path
 
-    quantize_dynamic(
-        model_to_quantize,
-        output_path,
-        weight_type=QuantType.QUInt8
-    )
+    quantize_dynamic(model_to_quantize, output_path, weight_type=QuantType.QUInt8)
 
     # Clean up preprocessed file
     if os.path.exists(preprocessed_path):
@@ -211,13 +195,13 @@ def main():
     else:
         models_to_export = [args.model]
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("ONNX MODEL EXPORT")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Models: {', '.join(models_to_export)}")
     print(f"Output directory: {args.output_dir}")
     print(f"Quantization: {'Enabled' if args.quantize else 'Disabled'}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     results = {}
 
@@ -258,9 +242,9 @@ def main():
 
         results[model_name] = model_results
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("EXPORT COMPLETE")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"ONNX models saved to: {args.output_dir}")
 
     # List exported files

@@ -16,7 +16,7 @@ import torch.nn as nn
 def denormalize_image(
     image_tensor: torch.Tensor,
     mean: tuple[float, ...] = (0.485, 0.456, 0.406),
-    std: tuple[float, ...] = (0.229, 0.224, 0.225)
+    std: tuple[float, ...] = (0.229, 0.224, 0.225),
 ) -> np.ndarray:
     """
     Convert a normalized tensor image back to displayable format.
@@ -76,6 +76,7 @@ class GradCAM:
 
     def _register_hooks(self):
         """Register forward and backward hooks on target layer."""
+
         def forward_hook(module, input, output):
             self.activations = output.detach()
 
@@ -91,9 +92,7 @@ class GradCAM:
         self.backward_handle.remove()
 
     def __call__(
-        self,
-        image_tensor: torch.Tensor,
-        class_idx: Optional[int] = None
+        self, image_tensor: torch.Tensor, class_idx: Optional[int] = None
     ) -> tuple[np.ndarray, int]:
         """
         Generate Grad-CAM heatmap for an image.
@@ -152,7 +151,7 @@ class GradCAM:
         image_tensor: torch.Tensor,
         heatmap: np.ndarray,
         alpha: float = 0.4,
-        colormap: int = cv2.COLORMAP_JET
+        colormap: int = cv2.COLORMAP_JET,
     ) -> np.ndarray:
         """
         Overlay heatmap on original image.
@@ -172,10 +171,7 @@ class GradCAM:
 
         # Resize heatmap to image size
         heatmap_resized = cv2.resize(heatmap, (w, h))
-        heatmap_colored = cv2.applyColorMap(
-            np.uint8(255 * heatmap_resized),
-            colormap
-        )
+        heatmap_colored = cv2.applyColorMap(np.uint8(255 * heatmap_resized), colormap)
 
         # Blend
         blended = cv2.addWeighted(original, 1 - alpha, heatmap_colored, alpha, 0)
@@ -192,7 +188,7 @@ def apply_gradcam(
     target_layer: nn.Module,
     class_idx: Optional[int] = None,
     show: bool = True,
-    save_path: Optional[str] = None
+    save_path: Optional[str] = None,
 ) -> tuple[np.ndarray, int]:
     """
     Apply Grad-CAM to an image and optionally display/save.
@@ -260,7 +256,7 @@ def batch_gradcam(
     images: list,
     target_layer: nn.Module,
     num_cols: int = 5,
-    save_path: Optional[str] = None
+    save_path: Optional[str] = None,
 ):
     """
     Apply Grad-CAM to multiple images and display in a grid.

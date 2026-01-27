@@ -2,7 +2,6 @@
 Unit tests for dataset and data loading.
 """
 
-
 import pytest
 import torch
 from PIL import Image
@@ -16,20 +15,23 @@ from src.age_prediction.dataset import AgeDataset, get_transforms
 class TestAgeGrouping:
     """Tests for age group utilities."""
 
-    @pytest.mark.parametrize("age,expected_group", [
-        (0, 0),
-        (15, 0),
-        (25, 0),
-        (26, 1),
-        (40, 1),
-        (50, 1),
-        (51, 2),
-        (65, 2),
-        (75, 2),
-        (76, 3),
-        (100, 3),
-        (116, 3),
-    ])
+    @pytest.mark.parametrize(
+        "age,expected_group",
+        [
+            (0, 0),
+            (15, 0),
+            (25, 0),
+            (26, 1),
+            (40, 1),
+            (50, 1),
+            (51, 2),
+            (65, 2),
+            (75, 2),
+            (76, 3),
+            (100, 3),
+            (116, 3),
+        ],
+    )
     def test_get_age_group(self, age, expected_group):
         """Test age to group conversion."""
         assert get_age_group(age) == expected_group
@@ -39,12 +41,15 @@ class TestAgeGrouping:
         assert get_age_group(-1) == -1
         assert get_age_group(200) == -1
 
-    @pytest.mark.parametrize("group_idx,expected_label", [
-        (0, "0-25"),
-        (1, "26-50"),
-        (2, "51-75"),
-        (3, "76-116"),
-    ])
+    @pytest.mark.parametrize(
+        "group_idx,expected_label",
+        [
+            (0, "0-25"),
+            (1, "26-50"),
+            (2, "51-75"),
+            (3, "76-116"),
+        ],
+    )
     def test_get_age_label(self, group_idx, expected_label):
         """Test group index to label conversion."""
         assert get_age_label(group_idx) == expected_label
@@ -155,10 +160,12 @@ class TestAgeDataset:
 
     def test_dataset_getitem(self, temp_dataset):
         """Test dataset __getitem__ returns correct types."""
-        transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ])
+        transform = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+            ]
+        )
         dataset = AgeDataset(str(temp_dataset), transform=transform, verbose=False)
 
         image, label = dataset[0]

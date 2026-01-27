@@ -21,7 +21,7 @@ class TestAgePredictor:
         return AgePredictor(
             model_name="mobilenet_v2",
             weights_path=None,  # Use pretrained only
-            device="cpu"
+            device="cpu",
         )
 
     @pytest.fixture
@@ -93,11 +93,7 @@ class TestAgePredictor:
     def test_different_model_architectures(self, dummy_image):
         """Test predictor works with different architectures."""
         for model_name in ["mobilenet_v2", "resnet50", "efficientnet_b0"]:
-            predictor = AgePredictor(
-                model_name=model_name,
-                weights_path=None,
-                device="cpu"
-            )
+            predictor = AgePredictor(model_name=model_name, weights_path=None, device="cpu")
             result = predictor.predict(dummy_image)
             assert "class_idx" in result
 

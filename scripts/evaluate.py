@@ -30,50 +30,39 @@ from src.age_prediction.models import get_available_models
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Evaluate age prediction models",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     parser.add_argument(
-        "--model", "-m",
+        "--model",
+        "-m",
         type=str,
         default="resnet50",
         choices=get_available_models() + ["all"],
-        help="Model to evaluate"
+        help="Model to evaluate",
     )
 
-    parser.add_argument(
-        "--data-dir", "-d",
-        type=str,
-        default="./data",
-        help="Path to dataset"
-    )
+    parser.add_argument("--data-dir", "-d", type=str, default="./data", help="Path to dataset")
 
     parser.add_argument(
         "--checkpoint-dir",
         type=str,
         default="./checkpoints",
-        help="Directory with model checkpoints"
+        help="Directory with model checkpoints",
     )
 
     parser.add_argument(
-        "--output-dir",
-        type=str,
-        default="./outputs",
-        help="Directory to save outputs"
+        "--output-dir", type=str, default="./outputs", help="Directory to save outputs"
     )
 
-    parser.add_argument(
-        "--compare",
-        action="store_true",
-        help="Compare all models side by side"
-    )
+    parser.add_argument("--compare", action="store_true", help="Compare all models side by side")
 
     parser.add_argument(
         "--device",
         type=str,
         default="auto",
         choices=["auto", "cuda", "cpu", "mps"],
-        help="Device to use"
+        help="Device to use",
     )
 
     return parser.parse_args()
@@ -118,7 +107,9 @@ def main():
             # Confusion matrix
             metrics = compute_metrics(labels, preds, probs)
             cm_path = os.path.join(args.output_dir, f"{model_name}_confusion_matrix.png")
-            plot_confusion_matrix(metrics["confusion_matrix"], f"{model_name} Confusion Matrix", cm_path)
+            plot_confusion_matrix(
+                metrics["confusion_matrix"], f"{model_name} Confusion Matrix", cm_path
+            )
 
             # ROC curves
             roc_path = os.path.join(args.output_dir, f"{model_name}_roc_curves.png")
@@ -148,7 +139,9 @@ def main():
 
         # Save visualizations
         cm_path = os.path.join(args.output_dir, f"{model_name}_confusion_matrix.png")
-        plot_confusion_matrix(metrics["confusion_matrix"], f"{model_name} Confusion Matrix", cm_path)
+        plot_confusion_matrix(
+            metrics["confusion_matrix"], f"{model_name} Confusion Matrix", cm_path
+        )
 
         roc_path = os.path.join(args.output_dir, f"{model_name}_roc_curves.png")
         plot_roc_curves(labels, probs, f"{model_name} ROC Curves", roc_path)

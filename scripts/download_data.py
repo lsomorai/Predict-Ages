@@ -19,17 +19,17 @@ DATASET_SOURCES = {
     "utkface_part1": {
         "url": "https://drive.usercontent.google.com/download?id=0BxYys69jI14kYVM3aVhKS1VhRUk&export=download&confirm=t",
         "filename": "UTKFace_part1.tar.gz",
-        "type": "tar.gz"
+        "type": "tar.gz",
     },
     "utkface_part2": {
         "url": "https://drive.usercontent.google.com/download?id=0BxYys69jI14kSVdWWllDMWhnN2c&export=download&confirm=t",
         "filename": "UTKFace_part2.tar.gz",
-        "type": "tar.gz"
+        "type": "tar.gz",
     },
     "utkface_part3": {
         "url": "https://drive.usercontent.google.com/download?id=0BxYys69jI14kU0I3YUNlUjBPb1E&export=download&confirm=t",
         "filename": "UTKFace_part3.tar.gz",
-        "type": "tar.gz"
+        "type": "tar.gz",
     },
 }
 
@@ -69,13 +69,13 @@ def extract_archive(archive_path: Path, dest_dir: Path) -> bool:
     print(f"Extracting {archive_path.name}...")
     try:
         if archive_path.suffix == ".zip":
-            with zipfile.ZipFile(archive_path, 'r') as zf:
+            with zipfile.ZipFile(archive_path, "r") as zf:
                 zf.extractall(dest_dir)
         elif archive_path.name.endswith(".tar.gz") or archive_path.name.endswith(".tgz"):
-            with tarfile.open(archive_path, 'r:gz') as tf:
+            with tarfile.open(archive_path, "r:gz") as tf:
                 tf.extractall(dest_dir)
         elif archive_path.name.endswith(".tar"):
-            with tarfile.open(archive_path, 'r') as tf:
+            with tarfile.open(archive_path, "r") as tf:
                 tf.extractall(dest_dir)
         else:
             print(f"Unknown archive format: {archive_path}")
@@ -131,10 +131,20 @@ def download_kaggle_dataset(data_dir: Path) -> bool:
 
     try:
         import subprocess
+
         result = subprocess.run(
-            ["kaggle", "datasets", "download", "-d", "jangedoo/utkface-new", "-p", str(data_dir), "--unzip"],
+            [
+                "kaggle",
+                "datasets",
+                "download",
+                "-d",
+                "jangedoo/utkface-new",
+                "-p",
+                str(data_dir),
+                "--unzip",
+            ],
             capture_output=True,
-            text=True
+            text=True,
         )
         if result.returncode == 0:
             print("Kaggle download successful!")
@@ -152,22 +162,23 @@ def main():
         description="Download UTKFace dataset for age prediction training"
     )
     parser.add_argument(
-        "--output-dir", "-o",
+        "--output-dir",
+        "-o",
         type=str,
         default="./data",
-        help="Output directory for dataset (default: ./data)"
+        help="Output directory for dataset (default: ./data)",
     )
     parser.add_argument(
         "--source",
         type=str,
         choices=["google-drive", "kaggle"],
         default="google-drive",
-        help="Download source (default: google-drive)"
+        help="Download source (default: google-drive)",
     )
     parser.add_argument(
         "--keep-archives",
         action="store_true",
-        help="Keep downloaded archive files after extraction"
+        help="Keep downloaded archive files after extraction",
     )
     args = parser.parse_args()
 
@@ -181,7 +192,6 @@ def main():
     print(f"Output directory: {data_dir}")
     print(f"Source: {args.source}")
     print("=" * 60)
-
 
     if args.source == "kaggle":
         download_kaggle_dataset(data_dir)
@@ -207,7 +217,6 @@ def main():
                     print(f"  Removed archive: {info['filename']}")
             else:
                 pass
-
 
     # Flatten directory structure if needed
     print("\nOrganizing files...")

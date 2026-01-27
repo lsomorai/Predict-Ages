@@ -13,9 +13,7 @@ from .config import AGE_GROUPS, NUM_CLASSES
 
 
 def evaluate_model(
-    model: nn.Module,
-    dataloader: DataLoader,
-    device: Optional[torch.device] = None
+    model: nn.Module, dataloader: DataLoader, device: Optional[torch.device] = None
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Evaluate a model on a dataloader.
@@ -59,9 +57,7 @@ def evaluate_model(
 
 
 def compute_metrics(
-    y_true: np.ndarray,
-    y_pred: np.ndarray,
-    y_probs: Optional[np.ndarray] = None
+    y_true: np.ndarray, y_pred: np.ndarray, y_probs: Optional[np.ndarray] = None
 ) -> dict:
     """
     Compute comprehensive classification metrics.
@@ -117,6 +113,7 @@ def compute_metrics(
     if y_probs is not None:
         try:
             from sklearn.metrics import roc_auc_score
+
             # One-vs-rest ROC-AUC
             metrics["roc_auc_ovr"] = roc_auc_score(
                 y_true, y_probs, multi_class="ovr", average="macro"
@@ -133,7 +130,7 @@ def print_metrics(metrics: dict) -> None:
     print("EVALUATION RESULTS")
     print("=" * 60)
 
-    print(f"\nOverall Accuracy: {metrics['accuracy']:.4f} ({metrics['accuracy']*100:.2f}%)")
+    print(f"\nOverall Accuracy: {metrics['accuracy']:.4f} ({metrics['accuracy'] * 100:.2f}%)")
 
     print("\nMacro-averaged Metrics:")
     print(f"  Precision: {metrics['precision_macro']:.4f}")
@@ -154,9 +151,7 @@ def print_metrics(metrics: dict) -> None:
 
 
 def plot_confusion_matrix(
-    confusion_matrix: np.ndarray,
-    title: str = "Confusion Matrix",
-    save_path: Optional[str] = None
+    confusion_matrix: np.ndarray, title: str = "Confusion Matrix", save_path: Optional[str] = None
 ):
     """
     Plot a confusion matrix.
@@ -178,7 +173,7 @@ def plot_confusion_matrix(
         fmt="d",
         cmap="Blues",
         xticklabels=class_names,
-        yticklabels=class_names
+        yticklabels=class_names,
     )
     plt.xlabel("Predicted Age Group")
     plt.ylabel("True Age Group")
@@ -196,7 +191,7 @@ def plot_roc_curves(
     y_true: np.ndarray,
     y_probs: np.ndarray,
     title: str = "ROC Curves",
-    save_path: Optional[str] = None
+    save_path: Optional[str] = None,
 ):
     """
     Plot ROC curves for all classes.
@@ -223,12 +218,7 @@ def plot_roc_curves(
     for i in range(NUM_CLASSES):
         fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_probs[:, i])
         roc_auc = auc(fpr, tpr)
-        plt.plot(
-            fpr, tpr,
-            color=colors[i],
-            lw=2,
-            label=f"{class_names[i]} (AUC = {roc_auc:.3f})"
-        )
+        plt.plot(fpr, tpr, color=colors[i], lw=2, label=f"{class_names[i]} (AUC = {roc_auc:.3f})")
 
     plt.plot([0, 1], [0, 1], "k--", lw=2, label="Random (AUC = 0.500)")
     plt.xlim([0.0, 1.0])
@@ -248,9 +238,7 @@ def plot_roc_curves(
 
 
 def compare_models(
-    models: dict[str, nn.Module],
-    dataloader: DataLoader,
-    device: Optional[torch.device] = None
+    models: dict[str, nn.Module], dataloader: DataLoader, device: Optional[torch.device] = None
 ) -> dict[str, dict]:
     """
     Compare multiple models on the same dataset.

@@ -28,71 +28,47 @@ from src.age_prediction.train import plot_training_curves, train_model
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Train age prediction models",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     # Model settings
     parser.add_argument(
-        "--model", "-m",
+        "--model",
+        "-m",
         type=str,
         default="resnet50",
         choices=get_available_models() + ["all"],
-        help="Model architecture to train"
+        help="Model architecture to train",
     )
 
     # Data settings
     parser.add_argument(
-        "--data-dir", "-d",
-        type=str,
-        default="./data",
-        help="Path to dataset directory"
+        "--data-dir", "-d", type=str, default="./data", help="Path to dataset directory"
     )
 
     # Training settings
-    parser.add_argument(
-        "--epochs", "-e",
-        type=int,
-        default=10,
-        help="Number of training epochs"
-    )
-    parser.add_argument(
-        "--batch-size", "-b",
-        type=int,
-        default=32,
-        help="Batch size"
-    )
-    parser.add_argument(
-        "--lr", "--learning-rate",
-        type=float,
-        default=0.001,
-        help="Learning rate"
-    )
+    parser.add_argument("--epochs", "-e", type=int, default=10, help="Number of training epochs")
+    parser.add_argument("--batch-size", "-b", type=int, default=32, help="Batch size")
+    parser.add_argument("--lr", "--learning-rate", type=float, default=0.001, help="Learning rate")
 
     # Output settings
     parser.add_argument(
         "--checkpoint-dir",
         type=str,
         default="./checkpoints",
-        help="Directory to save model checkpoints"
+        help="Directory to save model checkpoints",
     )
     parser.add_argument(
         "--output-dir",
         type=str,
         default="./outputs",
-        help="Directory to save training outputs (plots, logs)"
+        help="Directory to save training outputs (plots, logs)",
     )
 
     # Weights & Biases
+    parser.add_argument("--wandb", action="store_true", help="Enable Weights & Biases logging")
     parser.add_argument(
-        "--wandb",
-        action="store_true",
-        help="Enable Weights & Biases logging"
-    )
-    parser.add_argument(
-        "--wandb-project",
-        type=str,
-        default="age-prediction",
-        help="W&B project name"
+        "--wandb-project", type=str, default="age-prediction", help="W&B project name"
     )
 
     # Device
@@ -101,15 +77,11 @@ def parse_args():
         type=str,
         default="auto",
         choices=["auto", "cuda", "cpu", "mps"],
-        help="Device to use for training"
+        help="Device to use for training",
     )
 
     # Augmentation
-    parser.add_argument(
-        "--no-augmentation",
-        action="store_true",
-        help="Disable data augmentation"
-    )
+    parser.add_argument("--no-augmentation", action="store_true", help="Disable data augmentation")
 
     return parser.parse_args()
 
@@ -139,16 +111,16 @@ def main():
     else:
         models_to_train = [args.model]
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("AGE PREDICTION MODEL TRAINING")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Models: {', '.join(models_to_train)}")
     print(f"Device: {config.get_device()}")
     print(f"Epochs: {config.epochs}")
     print(f"Batch size: {config.batch_size}")
     print(f"Learning rate: {config.learning_rate}")
     print(f"Data directory: {config.data_dir}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     # Create dataloaders
     print("Loading dataset...")
@@ -157,9 +129,9 @@ def main():
     # Train each model
     results = {}
     for model_name in models_to_train:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Training {model_name.upper()}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         # Create model
         model = create_model(model_name, config)
@@ -171,7 +143,7 @@ def main():
             config=config,
             model_name=model_name,
             use_wandb=args.wandb,
-            checkpoint_dir=args.checkpoint_dir
+            checkpoint_dir=args.checkpoint_dir,
         )
 
         # Plot training curves
@@ -186,23 +158,25 @@ def main():
 
         # Plot confusion matrix
         cm_path = os.path.join(args.output_dir, f"{model_name}_confusion_matrix.png")
-        plot_confusion_matrix(metrics["confusion_matrix"], title=f"{model_name} Confusion Matrix", save_path=cm_path)
+        plot_confusion_matrix(
+            metrics["confusion_matrix"], title=f"{model_name} Confusion Matrix", save_path=cm_path
+        )
 
         results[model_name] = {
             "accuracy": accuracy,
             "f1_macro": metrics["f1_macro"],
-            "history": history.to_dict()
+            "history": history.to_dict(),
         }
 
     # Summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("TRAINING COMPLETE - SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"{'Model':<20} {'Test Accuracy':<15} {'F1 (Macro)':<15}")
     print("-" * 50)
     for model_name, result in results.items():
         print(f"{model_name:<20} {result['accuracy']:<15.4f} {result['f1_macro']:<15.4f}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     print(f"\nCheckpoints saved to: {args.checkpoint_dir}")
     print(f"Outputs saved to: {args.output_dir}")

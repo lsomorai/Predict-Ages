@@ -28,7 +28,7 @@ class AgePredictor:
         model_name: str = "resnet50",
         weights_path: Optional[str] = None,
         device: Optional[str] = None,
-        config: Optional[Config] = None
+        config: Optional[Config] = None,
     ):
         """
         Initialize the age predictor.
@@ -53,10 +53,7 @@ class AgePredictor:
             self.model = EnsembleModel(weights_dir=weights_dir)
         else:
             self.model = create_model(
-                model_name,
-                self.config,
-                pretrained=True,
-                freeze_backbone=True
+                model_name, self.config, pretrained=True, freeze_backbone=True
             )
 
             if weights_path and os.path.exists(weights_path):
@@ -68,11 +65,13 @@ class AgePredictor:
         self.model.eval()
 
         # Setup preprocessing
-        self.transform = transforms.Compose([
-            transforms.Resize((self.config.image_size, self.config.image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=self.config.mean, std=self.config.std),
-        ])
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize((self.config.image_size, self.config.image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=self.config.mean, std=self.config.std),
+            ]
+        )
 
         # Setup Grad-CAM (only for single models, not ensemble)
         self.gradcam = None
@@ -99,9 +98,7 @@ class AgePredictor:
         return tensor.unsqueeze(0).to(self.device)
 
     def predict(
-        self,
-        image: Union[str, Image.Image, np.ndarray],
-        return_probs: bool = True
+        self, image: Union[str, Image.Image, np.ndarray], return_probs: bool = True
     ) -> dict:
         """
         Predict age group for an image.
@@ -132,15 +129,13 @@ class AgePredictor:
 
         if return_probs:
             result["probabilities"] = {
-                AGE_GROUPS[i]["display"]: probs[0, i].item()
-                for i in range(NUM_CLASSES)
+                AGE_GROUPS[i]["display"]: probs[0, i].item() for i in range(NUM_CLASSES)
             }
 
         return result
 
     def predict_with_gradcam(
-        self,
-        image: Union[str, Image.Image, np.ndarray]
+        self, image: Union[str, Image.Image, np.ndarray]
     ) -> tuple[dict, np.ndarray]:
         """
         Predict age with Grad-CAM visualization.
@@ -165,10 +160,7 @@ class AgePredictor:
 
         return prediction, overlay
 
-    def predict_batch(
-        self,
-        images: list[Union[str, Image.Image, np.ndarray]]
-    ) -> list[dict]:
+    def predict_batch(self, images: list[Union[str, Image.Image, np.ndarray]]) -> list[dict]:
         """
         Predict age for multiple images.
 
@@ -185,10 +177,7 @@ class AgePredictor:
         return results
 
     def benchmark(
-        self,
-        image: Union[str, Image.Image, np.ndarray],
-        num_runs: int = 100,
-        warmup_runs: int = 10
+        self, image: Union[str, Image.Image, np.ndarray], num_runs: int = 100, warmup_runs: int = 10
     ) -> dict:
         """
         Benchmark inference latency.
@@ -238,8 +227,7 @@ class AgePredictor:
 
 
 def load_predictor(
-    model_name: str = "resnet50",
-    checkpoint_dir: str = "./checkpoints"
+    model_name: str = "resnet50", checkpoint_dir: str = "./checkpoints"
 ) -> AgePredictor:
     """
     Convenience function to load a predictor with default settings.
@@ -256,7 +244,4 @@ def load_predictor(
     else:
         weights_path = os.path.join(checkpoint_dir, f"best_{model_name}.pth")
 
-    return AgePredictor(
-        model_name=model_name,
-        weights_path=weights_path
-    )
+    return AgePredictor(model_name=model_name, weights_path=weights_path)

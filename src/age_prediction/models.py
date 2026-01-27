@@ -37,7 +37,7 @@ def _create_classifier(in_features: int, config: Config) -> nn.Sequential:
         nn.Linear(512, 256),
         nn.ReLU(),
         nn.Dropout(config.dropout_rate),
-        nn.Linear(256, config.num_classes)
+        nn.Linear(256, config.num_classes),
     )
 
 
@@ -45,7 +45,7 @@ def create_model(
     model_name: str,
     config: Optional[Config] = None,
     pretrained: bool = True,
-    freeze_backbone: bool = True
+    freeze_backbone: bool = True,
 ) -> nn.Module:
     """
     Create a model for age prediction.
@@ -63,10 +63,7 @@ def create_model(
         config = Config()
 
     if model_name not in AVAILABLE_MODELS:
-        raise ValueError(
-            f"Invalid model name: {model_name}. "
-            f"Available: {AVAILABLE_MODELS}"
-        )
+        raise ValueError(f"Invalid model name: {model_name}. Available: {AVAILABLE_MODELS}")
 
     # Create base model with pretrained weights
     if model_name == "mobilenet_v2":
@@ -135,7 +132,7 @@ class EnsembleModel(nn.Module):
         self,
         model_names: Optional[list[str]] = None,
         config: Optional[Config] = None,
-        weights_dir: Optional[str] = None
+        weights_dir: Optional[str] = None,
     ):
         """
         Initialize ensemble model.
